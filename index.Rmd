@@ -6,15 +6,34 @@ output:
     number_sections: true
     toc_depth: 4
     toc_float: 
-      collapsed: false
+      collapsed: true
       smooth_scroll: false
 ---
 
-# Old Faithful Geyser
-```{r}
-
+```{r, message=F, warning=F}
 library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(rebus)
+library(gridExtra)
+library(cowplot)
+library(ggrepel)
 library(ggExtra)
+library(RColorBrewer)
+library(viridis)
+library(nycflights13)
+library(MASS)
+library(leaflet) # map drawing
+library(ggthemes) # for easeir theme setting
+library(wordcloud)
+```
+
+
+# Scatterplot
+
+## Old Faithful Geyser
+```{r, message=F, warning=F}
 head(faithful)
 
 p = ggplot(faithful, 
@@ -32,10 +51,10 @@ ggMarginal(p) # add marginal density plot
 
 
 
-# Iris flowers
-## Plot 1
+## Iris flowers
+### Plot 1
 
-```{r}
+```{r, message=F, warning=F}
 ggplot(iris, 
        aes(Sepal.Length, y = Sepal.Width, color = Species)) + 
   geom_count(alpha = .6) + # use point size to show data density (overcome overlaping)
@@ -45,10 +64,9 @@ ggplot(iris,
 ```
 
 
-## Plot 2
+### Plot 2
 
-```{r}
-library(ggplot2)
+```{r, message=F, warning=F}
 head(iris)
 ggplot(iris, 
        aes(x = Sepal.Length, y = Sepal.Width, 
@@ -69,9 +87,8 @@ ggplot(iris,
 ```
 
 
-# Diamonds 
-```{r}
-library(ggplot2)
+## Diamonds dataset
+```{r, message=F, warning=F}
 head(diamonds)
 dim(diamonds)
 
@@ -90,11 +107,8 @@ ggplot(diamonds,
 ```
 
 
-# Cars
+## Cars dataset
 ```{r, fig.width=10, fig.height=8}
-library(ggplot2)
-library(ggrepel)
-library(ggExtra)
 p = ggplot(mtcars, 
            aes(x = wt, y = mpg, 
                color = factor(cyl), shape = factor(am))) + # use of "factor()" change cyl and am from continuous to discrete variables; particularly important since "shape" is discrete
@@ -115,10 +129,8 @@ ggMarginal(p, type = "density", size = 10, groupColour = T, groupFill = T, alpha
 
 
 
-# Mammals  
-```{r}
-library(ggplot2)
-library(MASS)
+## Mammals dataset
+```{r, message=F, warning=F}
 ggplot(mammals, 
        aes(x = body, y = brain)) + geom_point() +
   geom_smooth(method = "lm", fill = "firebrick", color = "firebrick", alpha = .2, size = .5) +
@@ -133,13 +145,8 @@ ggplot(mammals,
 ```
 
 
-# New york flight 
+## New york flight dataset
 ```{r, message=F, warning=F, fig.height=9, fig.width=10}
-library(ggplot2)
-library(dplyr)
-library(RColorBrewer)
-library(nycflights13)
-
 theme_set(theme_bw() + 
             theme(title = element_text(colour = "black", face = "bold"),
                   axis.text = element_text(colour = "black", face = "bold"),
@@ -155,5 +162,565 @@ planes %>%
   scale_size(range = c(4, 14), "Dot density") +
   theme(legend.position = c(.2, .7)) +
   labs(title = "Plane metadata")
+```
+
+
+
+# Lines plot
+
+## Loblolly dataset
+```{r, message=F, warning=F}
+# The growth of Loblolly pine trees
+p1 = Loblolly %>%
+  ggplot(aes(x = age, y = height, color = Seed)) +
+  geom_point() +
+  geom_line() +
+  theme(legend.position = "")
+
+
+# Set up different colors
+color.func = brewer.pal(11, "Spectral") %>% colorRampPalette() # divide the "Spectral" 1 colors into n colors;
+seed.color = color.func(Loblolly$Seed %>% n_distinct()) %>% # n = number of seeds
+  sample() # randomly shuffle the color orders so that similar colors may be displayed apart
+
+p2 = p1 + scale_color_manual(values = seed.color) 
+
+grid.arrange(p1, p2, nrow = 1)
+```
+
+
+## Indometh dataset
+### Spaghetti plot 
+```{r, message=F, warning=F}
+# spaghetti plot 
+p1 = 
+  Indometh %>% 
+  ggplot(aes(x = time, y = conc, color = Subject)) +
+  geom_point(position = position_dodge(.1)) +  # add random noise to point coordinates to avoid overlap
+  geom_line(position = position_dodge(.1)) +  # add random noise to line coordinates to avoid overlap, in line with points
+  scale_color_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(legend.position = "NA",
+        panel.grid = element_blank()) 
+
+
+p2 = p1 + scale_y_log10() +
+  labs(y = "conc. logarithmically transformed") + # log transform y-axis
+  annotation_logticks() # add scale ticks
+
+
+ggdraw() +
+  draw_plot(p1) +
+  draw_plot(p2, x = .3, y = .3, width = .6, height = .6)
+```
+
+### Spaghetti plot with trend line
+```{r, message=F, warning=F}
+# Create dataset containing averaged trend line
+
+# Create sumamry dataset of the trending line
+Indometh.summary = 
+  Indometh %>% 
+  group_by(time) %>%
+  summarise(conc.mean = mean(conc),
+            conc.sd = sd(conc),
+            conc.max = max(conc),
+            conc.min = min(conc))
+Indometh.summary
+
+
+p1 = Indometh %>%
+  ggplot(aes(x = time)) + # x = time shared by all following points and line aesthetic, so specified here
+  geom_point(aes(y = conc, color = Subject)) + # "conc" and "Subject" not shared by Indometh.summary, so specified here instead of upper line
+  geom_line (aes(y = conc, color = Subject)) +
+  scale_color_brewer(palette = "Set2") +
+  
+  # Add averaged trending line
+  geom_line(data = Indometh.summary,
+            aes(y = conc.mean), color = "black") +
+  
+  geom_errorbar(data = Indometh.summary,
+                aes(ymin = conc.mean - conc.sd, 
+                    ymax = conc.mean + conc.sd)) +
+  
+  geom_point(data = Indometh.summary,
+             aes(y = conc.mean), 
+             shape = 21, fill = "white", size = 3) + # most top layer above the lines and errorbars
+  theme_bw() +
+  theme(legend.position = "NA") 
+
+
+p2 = p1 + coord_cartesian(xlim = c(0, 2)) +
+  labs(title = "Zoom-in view\n for denser time intervals")
+
+
+ggdraw() +
+  draw_plot(p1) +
+  draw_plot(p2, x = .3, y = .3, width = .6, height = .6)
+```
+
+
+## Airquality dataset
+```{r, message=F, warning=F}
+head(airquality)
+
+airquality1 = airquality %>% 
+  arrange(Month, Day) %>% 
+  mutate(Time = 1:nrow(airquality) )
+
+high.temp = airquality1 %>% filter(Temp >= 90)  
+
+airquality1 %>%
+  ggplot(aes(x = Time, y = Temp,
+             color = factor(Month))) +
+  geom_line(aes(group = 1)) +
+  geom_point(shape = 21, fill = "white", stroke = 1) +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = c(.6, .05),
+        legend.direction = "horizontal") +
+  
+  # rectangle highlighting high-termperature region
+  geom_rect(aes(xmin = Time-1, xmax =Time, ymin = 90, ymax = 98), 
+            # many small rectangles combined together...one rectangle for each row
+            color = NA, fill = "firebrick", alpha = .1) +
+  
+  # highlight high-temperature threshold line
+  geom_rect(aes(xmin = Time-1, xmax = Time, ymin = 90, ymax = 90), 
+            # many small segments combined together...one segment for each row
+            color = "firebrick", size = .2) +
+  
+  # Text annotation
+  annotate("text", x = 20, y = 97, label = "HIGH HEAT ZONE",
+           fontface = "bold", color ="firebrick") +
+  
+  # highlight high-termperature points with red fill
+  geom_point(data = high.temp, 
+             shape = 21, fill = "firebrick", size = 3, show.legend = F) +
+  # new bigger points cover prior points; x, y coordinates inherit upper lines
+  
+  # Text label for high temperature           
+  geom_text_repel(data = high.temp,
+                  aes(label = Temp), # x, y coordinates inherit upper lines
+                  size = 3, color = "firebrick") 
+
+```
+
+
+
+# Bar plots
+
+## Car dataset
+```{r, message=F, warning=F}
+# convert from matrix to data frame or tibble
+mtcars.t = as_tibble(mtcars)
+mtcars.t$cars = rownames(mtcars)
+
+
+# Arrange cars in order of horsepower (hp)
+mtcars.t = mtcars.t %>% arrange(hp)
+cars.ordered = mtcars.t$cars # vector of cars in order of horsepower
+
+p.bar = mtcars.t %>% 
+  mutate(cars = factor(cars, levels = cars.ordered, ordered = T)) %>%
+  ggplot(aes(x = cars, y = hp, fill = factor(cyl))) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  
+  # polish up
+  
+  theme_minimal() +
+  theme(legend.position = c(.8, .2),
+        axis.text = element_text(color = "black")) +
+  
+  # Add pattern/trending line
+  geom_point(show.legend = F) +
+  geom_line(aes(group = NA)) # group = "" or group = 1...both work too!
+p.bar
+```
+
+
+```{r, fig.width=7, fig.height=7}
+# polar plot
+p.polar = p.bar + coord_polar() +
+  
+  # polish up
+  theme(legend.position = c(.5, .2),
+        legend.direction = "horizontal",
+        axis.text.y = element_blank(),
+        axis.title = element_blank())  +
+  
+  annotate(geom = "text", x = .5, y = .5, # put x, y coordinates here otherwise return an error
+           label = "Spinning\nhorsepower", 
+           color = "white", fontface = "bold", size = 5) +
+  scale_fill_brewer(palette = "Dark2") 
+p.polar
+```
+
+
+```{r, fig.width=8.5, fig.height=8.5}
+# Rotated car names
+text.angle = 90 - 360 * (1:nrow(mtcars) - .5)/nrow(mtcars) # rotate cars name together with bars
+text.angle = ifelse(text.angle < -90, 180 + text.angle, text.angle) # control flipping direction
+p.polar +
+  geom_text(aes(y  =hp + 80, label = cars), angle = text.angle) +
+  theme(axis.text = element_blank(),
+        legend.position = c(.5, 0.15))
+```
+
+
+
+# Histogram 
+
+
+## Iris dataset
+```{r, message=F, warning=F}
+iris.tidy = gather(iris, 1:4, # gather the first four variables into one variable (named as "measure)
+                   key = measure, # the new variable "measure" contains the prior four variable names
+                   value = dimension) # "dimension" contains all numeric values associated with the prior four variables
+
+p1 = ggplot(iris.tidy, 
+            aes(x = dimension, fill = Species)) + 
+  geom_histogram(binwidth = .2, position = "dodge") +
+  facet_wrap(~measure, nrow = 1,
+             scales = "free_x") + # independent x-axis for each facet
+  
+  scale_fill_brewer(palette = "Accent") + 
+  theme_bw() + 
+  theme(legend.position = "bottom") +
+  labs(title = "Histogram")
+```
+
+
+```{r, message=F, warning=F}
+p2 = ggplot(iris.tidy, 
+            aes(x = dimension, 
+                color = Species, # "color": for the color of the boarder line 
+                fill = Species)) + # "fill": for the color of the filling area
+  geom_density(alpha = .3) + # adjust the filling transparency
+  facet_wrap(~measure, nrow = 1, 
+             scales = "free_x") + # independent x-axis for each facet
+  
+  scale_color_brewer(palette = "Accent") +
+  scale_fill_brewer(palette = "Accent") +
+  theme_bw() + 
+  theme(legend.position = "bottom") +
+  labs(title = "Density plot")
+```
+
+
+```{r, fig.width=10, fig.height=10}
+grid.arrange(p1, p2, nrow = 2) # combine
+```
+
+
+## Rock dataset
+```{r, message=F, warning=F}
+head(rock)
+
+# Check histogram for all four variables
+gather(rock, 1:4, # gather all four variables into one variable named "measure"
+       key = measure, # the new variable "measure" contains all prior four variable names
+       value = values # "values" contains all numeric values associated with prior four variables
+       ) %>% # the pipeline feeds the gathered dataset into the 1st argument position of ggplot and streamlines programming
+  ggplot(aes(x = values)) + 
+  geom_histogram(fill = "Steelblue") +
+  facet_wrap(~measure, # facet based on "measure", i.e., the prior four variables
+             scales = "free") + # independent x-y scale for all four faceted plots
+  theme_minimal() +
+  theme(strip.text = element_text(color = "firebrick", face = "bold"),
+        panel.grid = element_line(color = "firebrick", size = .2))
+```
+
+
+## Diamonds dataset
+```{r, message=F, warning=F}
+ggplot(diamonds, aes(x = cut, fill = clarity)) + 
+  geom_histogram(stat = "count", position = "fill") +
+  theme_minimal()
+
+```
+
+
+
+# Lollipop plot
+
+## Cars dataset
+
+```{r, message=F, warning=F}
+# convert from matrix to data frame or tibble
+mtcars.t = as_tibble(mtcars)
+mtcars.t$cars = rownames(mtcars)
+mtcars.t
+
+# Arrange cars in order of horsepower (hp)
+mtcars.t = mtcars.t %>% arrange(hp)
+cars.ordered = mtcars.t$cars # vector of cars in order of horsepower
+
+mtcars.t.ordered = mtcars.t %>% 
+  mutate(cars = factor(cars, levels = cars.ordered, ordered = T))
+```
+
+
+```{r, message=F, warning=F}
+p1 = mtcars.t.ordered %>%
+ggplot(aes(x = cars, y = hp, color = factor(am))) + 
+  geom_point(aes(size = factor(cyl))) + 
+  # Do not specify point size in upper ggplot() line; 
+  # otherwise geom_segment lines width will also be dependent on cylinder number, which is less desirable 
+  
+  geom_segment(aes(x = cars, xend = cars, y = 0, yend = hp)) +
+  coord_flip() +
+  
+  # polish up
+  scale_color_brewer(palette = "Set2") +
+  theme_minimal() +
+  theme(legend.position = c(.8, .3),
+        axis.text = element_text(color = "black"),
+        axis.title = element_text(color = "black", face = "bold"))
+p1
+```
+
+----
+
+*Ignore warning "Using size for a discrete variable is not advised". In this case, treating cylinder number as factor a discrete variable is more desirable than otherwise as numeric continuous variable.*
+
+**Key in ordered plotting is to convert the associated variables (cars in this case) into: ORDERED FACTOR.** 
+
+
+```{r, fig.width=9, fig.height=9}
+# polar plot
+text.angle = 90 - (1:nrow(mtcars) - .5) / nrow(mtcars) * 360
+text.angle = ifelse(text.angle < -90, 180 + text.angle, text.angle)
+
+p1 + coord_polar() +
+  geom_text(aes(y = hp + 100, label = cars),
+            angle = text.angle,
+            show.legend = F) +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        legend.position = c(.5, .15),
+        legend.direction = "horizontal",
+        panel.grid = element_blank())
+
+```
+
+
+# Maps
+
+```{r, fig.width=10, fig.height=8}
+# world map
+
+my.world = map_data("world")
+dim(my.world); head(my.world); tail(my.world)
+
+n.country = my.world$region %>% n_distinct() 
+color.func = brewer.pal(12, "Paired") %>% colorRampPalette() # Divide "Paired" colors into more colors
+country.colors = color.func(n.country) # randomly shuffle color order; otherwise adjacent regions will be of similar colors
+
+worldmap = ggplot() + 
+  geom_polygon(data = my.world,
+               aes(x = long, y = lat, # longitude vs. latitude
+                   group = group, # dots for same group connected together
+                   fill = region), # fill color by region (country)
+               color = "white" # country boarder
+               ) +
+  
+  # polish up
+  guides(fill=FALSE) + # not show legend
+  coord_fixed(1.2) + # keep aspect ratio the same
+  scale_fill_manual(values = country.colors) +
+  scale_x_continuous(breaks = seq(-180, 180, by = 60),name = "Longitude") +
+  scale_y_continuous(breaks = seq(-90, 90, by = 30), name = "Latitude") +
+  theme_minimal() 
+  
+worldmap
+```
+
+
+## BRICS VS NATO
+
+Disclaim: this plot does not display any political views. It is only used for communicating plotting techniques. 
+
+```{r, message=F, warning=F}
+# Brics countries
+Brics = c("Brazil", "Russia", "India", "China", "South Africa")
+  # source: https://www.investopedia.com/terms/b/brics.asp
+Brics.col = brewer.pal(length(Brics), "Reds")  # color for Bricks countries
+names(Brics.col) = Brics; Brics.col # create named vectors
+
+
+# NATO countries
+NATO = c("Albania", "Belgium", "Bulgaria", "Canada", "Croatia", "Czech Republic", "Denmark", "Estonia", "France", "Germany", "Greece", "Hungary", "Iceland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Montenegro", "Netherlands", "Norway", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia", "Spain", "Turkey", "UK", "USA")
+# source : https://www.nti.org/learn/treaties-and-regimes/north-atlantic-treaty-organization-nato/
+
+NATO %in% (map_data("world")$region %>% unique()) # check all NATO countries are listed in map_data 
+
+# [3:9] to remove the less visible light blue colors
+NATO.col.func = c(brewer.pal(9, "Blues")[3:9]) %>% colorRampPalette() 
+
+NATO.col = NATO.col.func(n = length(NATO)) 
+names(NATO.col) = NATO; NATO.col # create named vectors
+
+
+# Combine Bricks with NATO
+country = c(Brics, NATO)
+country.colors = c(Brics.col, NATO.col)
+```
+
+
+```{r, fig.width=12, fig.height=8}
+# Plot
+p.world = ggplot(data = map_data("world"), # add global background
+       aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "grey", color = "white") +
+  coord_fixed(1.2) +
+  theme_minimal() +
+  
+  geom_polygon(data = map_data("world", region = country), # add NATO & BRICS countries
+               aes(fill = region), color = "white") +
+  scale_fill_manual(values = country.colors) +
+  
+  # extra polish up
+  labs(title = "NATO (blues) vs BRICS (reds)") +
+  theme(legend.position = "bottom", 
+        legend.direction = "horizontal",
+        title = element_text(face = "bold")) +
+  guides(fill = guide_legend(nrow = 4)) + # legend row number
+  scale_x_continuous(breaks = seq(-180, 180, by = 60),name = "Longitude") +
+  scale_y_continuous(breaks = seq(-90, 90, by = 30), name = "Latitude") 
+  
+p.world
+```
+
+
+```{r, message=F, warning=F}
+# europe zoom in (as insert)
+p.euro = p.world + 
+  coord_fixed(1.2, xlim = c(-25, 50), ylim = c(30, 70)) + 
+  # theme, labs and scale overwite those of p.world 
+  theme(panel.border = element_rect(fill = NA, color = "black"), 
+        panel.grid = element_blank(),
+        title = element_text(face = "bold"),
+        axis.title = element_blank(),
+        legend.position = "") +
+  labs(title = "European NATO zoomed-in") + 
+  scale_x_continuous(breaks = seq(-25, 50, by = 25)) +
+  scale_y_continuous(breaks = seq(30, 70, by = 10)) 
+
+p.euro
+```
+
+
+```{r, fig.width=12, fig.height=10}
+ggdraw() +
+  draw_plot(p.world) +
+  draw_plot(p.euro, x = 0.05, y = -.06, width = .27)
+```
+
+
+## US crime dataset
+```{r, message=F, warning=F}
+USArrests.2 = USArrests %>% 
+  mutate(region = rownames(USArrests) %>% # add "region" column of state names 
+           tolower()) # all states in small letters (to merge with "state" dataset)
+
+ # these two states are not in the "state" mainland dataset
+USArrests.2[!USArrests.2$region %in% map_data("state")$region, ]
+  
+USArrests.2 = USArrests.2 %>% 
+  inner_join(map_data("state"), by = "region") # augment with US geographical data
+
+USArrests.2 %>% 
+  ggplot() +
+  theme_map() +
+  geom_polygon(aes(x = long, y = lat, group = group, fill = Murder), 
+               color = "white", size = 1) + # set up state border line color and width
+  
+  # polish up
+  coord_fixed(1.4) +
+  labs(title = "Murder per 100K residents, USA, 1973") +
+  scale_fill_viridis(option = "magma", direction = -1) +  # direction: reverse the color scale
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 20, direction = "horizontal")) +
+  theme(plot.title = element_text(hjust = .5, size = 14, face = "bold"))
+```
+
+
+## Database map
+```{r, fig.width=8, fig.height=7}
+library(leaflet)
+# Background 1: NASA
+leaflet() %>% 
+  addTiles() %>% 
+  setView( lng = 2.34, lat = 48.85, zoom = 5 ) %>% 
+  addProviderTiles("NASAGIBS.ViirsEarthAtNight2012")
+
+
+# Background 2: World Imagery
+leaflet() %>% 
+  addTiles() %>% 
+  setView( lng = 2.34, lat = 48.85, zoom = 3 ) %>% 
+  addProviderTiles("Esri.WorldImagery")
+```
+
+
+## US mainland airports
+```{r, fig.width=10, fig.height=8}
+library(stringr)
+airport.US.mainland = airports %>%
+  filter(tzone %>% str_detect("America"),
+         lon < -50, lat < 50)
+
+# select EWR airport
+airport.EWR = airports %>% filter(faa == "EWR")
+```
+
+**Remove EWR from mainland airport dataset (otherwise geom_curve connection would report and error, as the same EWR point can't connect to itself)**
+
+```{r, fig.width=10, fig.height=8}
+
+airport.US.mainland = airport.US.mainland %>% anti_join(airport.EWR)
+
+
+ggplot(data = map_data("usa") ) + # US map background
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "black") +
+  coord_fixed(1.5) +
+  theme_map() + # from ggthemes package
+  
+  # add airports
+  geom_point(data = airport.US.mainland,
+             aes(x = lon, y = lat),
+             color = "tomato", shape = ".") +
+  
+  
+  # connect EWR airport with all other airports
+  geom_curve(data = airport.US.mainland,
+             aes(x = airport.EWR$lon, xend = lon,
+                 y = airport.EWR$lat, yend = lat),
+             alpha = .1, color = "turquoise2",  
+             curvature = .1) +
+  annotate(geom = "Text", label = "EWR", color = "Black", fontface = "bold",
+           x = airport.EWR$lon + 1.8, y = airport.EWR$lat-.8)
+
+```
+
+
+# Word cloud
+```{r, message=F, warning=F}
+library(nycflights13)
+library(wordcloud)
+plane.makers = planes %>% dplyr::select(manufacturer) %>% 
+  table() # count occurrence frequency
+
+set.seed(1234)
+par(bg="black")  # set background
+wordcloud(words = names(plane.makers), 
+          freq = plane.makers %>% sqrt(), # reduce frequency difference
+          min.freq = 1, random.order = F, rot.per = .1,
+          colors = terrain.colors(8)) 
+
 ```
 

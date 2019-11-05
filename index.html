@@ -14,7 +14,7 @@
 
 <title>Scatterplots</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -26,6 +26,16 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.1/htmlwidgets.js"></script>
+<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
+<link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet" />
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4-compressed.js"></script>
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-binding-2.0.2/leaflet.js"></script>
+<script src="site_libs/leaflet-providers-1.1.17/leaflet-providers.js"></script>
+<script src="site_libs/leaflet-providers-plugin-2.0.2/leaflet-providers-plugin.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -304,12 +314,6 @@ div.tocify {
   border-radius: 0px;
 }
 
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-}
 
 </style>
 
@@ -365,11 +369,27 @@ div.tocify {
 </div>
 
 
-<div id="old-faithful-geyser" class="section level1">
-<h1><span class="header-section-number">1</span> Old Faithful Geyser</h1>
 <pre class="r"><code>library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(rebus)
+library(gridExtra)
+library(cowplot)
+library(ggrepel)
 library(ggExtra)
-head(faithful)</code></pre>
+library(RColorBrewer)
+library(viridis)
+library(nycflights13)
+library(MASS)
+library(leaflet) # map drawing
+library(ggthemes) # for easeir theme setting
+library(wordcloud)</code></pre>
+<div id="scatterplot" class="section level1">
+<h1><span class="header-section-number">1</span> Scatterplot</h1>
+<div id="old-faithful-geyser" class="section level2">
+<h2><span class="header-section-number">1.1</span> Old Faithful Geyser</h2>
+<pre class="r"><code>head(faithful)</code></pre>
 <pre><code>##   eruptions waiting
 ## 1     3.600      79
 ## 2     1.800      54
@@ -388,24 +408,23 @@ head(faithful)</code></pre>
 p   
 
 ggMarginal(p) # add marginal density plot</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
-<div id="iris-flowers" class="section level1">
-<h1><span class="header-section-number">2</span> Iris flowers</h1>
-<div id="plot-1" class="section level2">
-<h2><span class="header-section-number">2.1</span> Plot 1</h2>
+<div id="iris-flowers" class="section level2">
+<h2><span class="header-section-number">1.2</span> Iris flowers</h2>
+<div id="plot-1" class="section level3">
+<h3><span class="header-section-number">1.2.1</span> Plot 1</h3>
 <pre class="r"><code>ggplot(iris, 
        aes(Sepal.Length, y = Sepal.Width, color = Species)) + 
   geom_count(alpha = .6) + # use point size to show data density (overcome overlaping)
   theme_classic() +
   labs(title = &quot;Edgar Anderson&#39;s Iris Data&quot;) +
   theme(title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
-<div id="plot-2" class="section level2">
-<h2><span class="header-section-number">2.2</span> Plot 2</h2>
-<pre class="r"><code>library(ggplot2)
-head(iris)</code></pre>
+<div id="plot-2" class="section level3">
+<h3><span class="header-section-number">1.2.2</span> Plot 2</h3>
+<pre class="r"><code>head(iris)</code></pre>
 <pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
 ## 1          5.1         3.5          1.4         0.2  setosa
 ## 2          4.9         3.0          1.4         0.2  setosa
@@ -429,13 +448,12 @@ head(iris)</code></pre>
         strip.background = element_blank(), 
         strip.text = element_text(face = &quot;bold&quot;, color = &quot;firebrick&quot;, size = 12)) +
   labs(title = &quot;Edgar Anderson&#39;s Iris Data&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 </div>
 </div>
-<div id="diamonds" class="section level1">
-<h1><span class="header-section-number">3</span> Diamonds</h1>
-<pre class="r"><code>library(ggplot2)
-head(diamonds)</code></pre>
+<div id="diamonds-dataset" class="section level2">
+<h2><span class="header-section-number">1.3</span> Diamonds dataset</h2>
+<pre class="r"><code>head(diamonds)</code></pre>
 <pre><code>## # A tibble: 6 x 10
 ##   carat cut       color clarity depth table price     x     y     z
 ##   &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -459,14 +477,11 @@ head(diamonds)</code></pre>
         title = element_text(face = &quot;bold&quot;)) +
   coord_cartesian(xlim = c(0, 4), ylim = c(0, 20000)) + # zoom in 
   labs(title = &quot;Prices of 50,000 round cut diamonds&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 </div>
-<div id="cars" class="section level1">
-<h1><span class="header-section-number">4</span> Cars</h1>
-<pre class="r"><code>library(ggplot2)
-library(ggrepel)
-library(ggExtra)
-p = ggplot(mtcars, 
+<div id="cars-dataset" class="section level2">
+<h2><span class="header-section-number">1.4</span> Cars dataset</h2>
+<pre class="r"><code>p = ggplot(mtcars, 
            aes(x = wt, y = mpg, 
                color = factor(cyl), shape = factor(am))) + # use of &quot;factor()&quot; change cyl and am from continuous to discrete variables; particularly important since &quot;shape&quot; is discrete
   geom_point() +
@@ -482,13 +497,11 @@ p = ggplot(mtcars,
 p  
 
 ggMarginal(p, type = &quot;density&quot;, size = 10, groupColour = T, groupFill = T, alpha = .2) # add marginal density plot</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="960" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="960" /></p>
 </div>
-<div id="mammals" class="section level1">
-<h1><span class="header-section-number">5</span> Mammals</h1>
-<pre class="r"><code>library(ggplot2)
-library(MASS)
-ggplot(mammals, 
+<div id="mammals-dataset" class="section level2">
+<h2><span class="header-section-number">1.5</span> Mammals dataset</h2>
+<pre class="r"><code>ggplot(mammals, 
        aes(x = body, y = brain)) + geom_point() +
   geom_smooth(method = &quot;lm&quot;, fill = &quot;firebrick&quot;, color = &quot;firebrick&quot;, alpha = .2, size = .5) +
   scale_x_log10() + 
@@ -499,16 +512,11 @@ ggplot(mammals,
   theme_bw() +
   labs(title = &quot;Attributes of Animals data&quot;) +
   theme(title = element_text(face = &quot;bold&quot;))</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
-<div id="new-york-flight" class="section level1">
-<h1><span class="header-section-number">6</span> New york flight</h1>
-<pre class="r"><code>library(ggplot2)
-library(dplyr)
-library(RColorBrewer)
-library(nycflights13)
-
-theme_set(theme_bw() + 
+<div id="new-york-flight-dataset" class="section level2">
+<h2><span class="header-section-number">1.6</span> New york flight dataset</h2>
+<pre class="r"><code>theme_set(theme_bw() + 
             theme(title = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
                   axis.text = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
                   legend.text = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
@@ -523,7 +531,575 @@ planes %&gt;%
   scale_size(range = c(4, 14), &quot;Dot density&quot;) +
   theme(legend.position = c(.2, .7)) +
   labs(title = &quot;Plane metadata&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="960" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" width="960" /></p>
+</div>
+</div>
+<div id="lines-plot" class="section level1">
+<h1><span class="header-section-number">2</span> Lines plot</h1>
+<div id="loblolly-dataset" class="section level2">
+<h2><span class="header-section-number">2.1</span> Loblolly dataset</h2>
+<pre class="r"><code># The growth of Loblolly pine trees
+p1 = Loblolly %&gt;%
+  ggplot(aes(x = age, y = height, color = Seed)) +
+  geom_point() +
+  geom_line() +
+  theme(legend.position = &quot;&quot;)
+
+
+# Set up different colors
+color.func = brewer.pal(11, &quot;Spectral&quot;) %&gt;% colorRampPalette() # divide the &quot;Spectral&quot; 1 colors into n colors;
+seed.color = color.func(Loblolly$Seed %&gt;% n_distinct()) %&gt;% # n = number of seeds
+  sample() # randomly shuffle the color orders so that similar colors may be displayed apart
+
+p2 = p1 + scale_color_manual(values = seed.color) 
+
+grid.arrange(p1, p2, nrow = 1)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="indometh-dataset" class="section level2">
+<h2><span class="header-section-number">2.2</span> Indometh dataset</h2>
+<div id="spaghetti-plot" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> Spaghetti plot</h3>
+<pre class="r"><code># spaghetti plot 
+p1 = 
+  Indometh %&gt;% 
+  ggplot(aes(x = time, y = conc, color = Subject)) +
+  geom_point(position = position_dodge(.1)) +  # add random noise to point coordinates to avoid overlap
+  geom_line(position = position_dodge(.1)) +  # add random noise to line coordinates to avoid overlap, in line with points
+  scale_color_brewer(palette = &quot;Dark2&quot;) +
+  theme_bw() +
+  theme(legend.position = &quot;NA&quot;,
+        panel.grid = element_blank()) 
+
+
+p2 = p1 + scale_y_log10() +
+  labs(y = &quot;conc. logarithmically transformed&quot;) + # log transform y-axis
+  annotation_logticks() # add scale ticks
+
+
+ggdraw() +
+  draw_plot(p1) +
+  draw_plot(p2, x = .3, y = .3, width = .6, height = .6)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+<div id="spaghetti-plot-with-trend-line" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> Spaghetti plot with trend line</h3>
+<pre class="r"><code># Create dataset containing averaged trend line
+
+# Create sumamry dataset of the trending line
+Indometh.summary = 
+  Indometh %&gt;% 
+  group_by(time) %&gt;%
+  summarise(conc.mean = mean(conc),
+            conc.sd = sd(conc),
+            conc.max = max(conc),
+            conc.min = min(conc))
+Indometh.summary</code></pre>
+<pre><code>## # A tibble: 11 x 5
+##     time conc.mean conc.sd conc.max conc.min
+##    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1  0.25    2.08    0.414      2.72     1.5 
+##  2  0.5     1.32    0.271      1.63     0.94
+##  3  0.75    0.918   0.176      1.16     0.71
+##  4  1       0.683   0.204      0.89     0.39
+##  5  1.25    0.557   0.187      0.8      0.3 
+##  6  2       0.332   0.0970     0.42     0.19
+##  7  3       0.198   0.0765     0.32     0.12
+##  8  4       0.137   0.0388     0.2      0.11
+##  9  5       0.125   0.0641     0.25     0.08
+## 10  6       0.09    0.0200     0.12     0.07
+## 11  8       0.0717  0.0147     0.09     0.05</code></pre>
+<pre class="r"><code>p1 = Indometh %&gt;%
+  ggplot(aes(x = time)) + # x = time shared by all following points and line aesthetic, so specified here
+  geom_point(aes(y = conc, color = Subject)) + # &quot;conc&quot; and &quot;Subject&quot; not shared by Indometh.summary, so specified here instead of upper line
+  geom_line (aes(y = conc, color = Subject)) +
+  scale_color_brewer(palette = &quot;Set2&quot;) +
+  
+  # Add averaged trending line
+  geom_line(data = Indometh.summary,
+            aes(y = conc.mean), color = &quot;black&quot;) +
+  
+  geom_errorbar(data = Indometh.summary,
+                aes(ymin = conc.mean - conc.sd, 
+                    ymax = conc.mean + conc.sd)) +
+  
+  geom_point(data = Indometh.summary,
+             aes(y = conc.mean), 
+             shape = 21, fill = &quot;white&quot;, size = 3) + # most top layer above the lines and errorbars
+  theme_bw() +
+  theme(legend.position = &quot;NA&quot;) 
+
+
+p2 = p1 + coord_cartesian(xlim = c(0, 2)) +
+  labs(title = &quot;Zoom-in view\n for denser time intervals&quot;)
+
+
+ggdraw() +
+  draw_plot(p1) +
+  draw_plot(p2, x = .3, y = .3, width = .6, height = .6)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+</div>
+<div id="airquality-dataset" class="section level2">
+<h2><span class="header-section-number">2.3</span> Airquality dataset</h2>
+<pre class="r"><code>head(airquality)</code></pre>
+<pre><code>##   Ozone Solar.R Wind Temp Month Day
+## 1    41     190  7.4   67     5   1
+## 2    36     118  8.0   72     5   2
+## 3    12     149 12.6   74     5   3
+## 4    18     313 11.5   62     5   4
+## 5    NA      NA 14.3   56     5   5
+## 6    28      NA 14.9   66     5   6</code></pre>
+<pre class="r"><code>airquality1 = airquality %&gt;% 
+  arrange(Month, Day) %&gt;% 
+  mutate(Time = 1:nrow(airquality) )
+
+high.temp = airquality1 %&gt;% filter(Temp &gt;= 90)  
+
+airquality1 %&gt;%
+  ggplot(aes(x = Time, y = Temp,
+             color = factor(Month))) +
+  geom_line(aes(group = 1)) +
+  geom_point(shape = 21, fill = &quot;white&quot;, stroke = 1) +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = c(.6, .05),
+        legend.direction = &quot;horizontal&quot;) +
+  
+  # rectangle highlighting high-termperature region
+  geom_rect(aes(xmin = Time-1, xmax =Time, ymin = 90, ymax = 98), 
+            # many small rectangles combined together...one rectangle for each row
+            color = NA, fill = &quot;firebrick&quot;, alpha = .1) +
+  
+  # highlight high-temperature threshold line
+  geom_rect(aes(xmin = Time-1, xmax = Time, ymin = 90, ymax = 90), 
+            # many small segments combined together...one segment for each row
+            color = &quot;firebrick&quot;, size = .2) +
+  
+  # Text annotation
+  annotate(&quot;text&quot;, x = 20, y = 97, label = &quot;HIGH HEAT ZONE&quot;,
+           fontface = &quot;bold&quot;, color =&quot;firebrick&quot;) +
+  
+  # highlight high-termperature points with red fill
+  geom_point(data = high.temp, 
+             shape = 21, fill = &quot;firebrick&quot;, size = 3, show.legend = F) +
+  # new bigger points cover prior points; x, y coordinates inherit upper lines
+  
+  # Text label for high temperature           
+  geom_text_repel(data = high.temp,
+                  aes(label = Temp), # x, y coordinates inherit upper lines
+                  size = 3, color = &quot;firebrick&quot;) </code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+</div>
+<div id="bar-plots" class="section level1">
+<h1><span class="header-section-number">3</span> Bar plots</h1>
+<div id="car-dataset" class="section level2">
+<h2><span class="header-section-number">3.1</span> Car dataset</h2>
+<pre class="r"><code># convert from matrix to data frame or tibble
+mtcars.t = as_tibble(mtcars)
+mtcars.t$cars = rownames(mtcars)
+
+
+# Arrange cars in order of horsepower (hp)
+mtcars.t = mtcars.t %&gt;% arrange(hp)
+cars.ordered = mtcars.t$cars # vector of cars in order of horsepower
+
+p.bar = mtcars.t %&gt;% 
+  mutate(cars = factor(cars, levels = cars.ordered, ordered = T)) %&gt;%
+  ggplot(aes(x = cars, y = hp, fill = factor(cyl))) +
+  geom_bar(stat = &quot;identity&quot;) +
+  coord_flip() +
+  
+  # polish up
+  
+  theme_minimal() +
+  theme(legend.position = c(.8, .2),
+        axis.text = element_text(color = &quot;black&quot;)) +
+  
+  # Add pattern/trending line
+  geom_point(show.legend = F) +
+  geom_line(aes(group = NA)) # group = &quot;&quot; or group = 1...both work too!
+p.bar</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code># polar plot
+p.polar = p.bar + coord_polar() +
+  
+  # polish up
+  theme(legend.position = c(.5, .2),
+        legend.direction = &quot;horizontal&quot;,
+        axis.text.y = element_blank(),
+        axis.title = element_blank())  +
+  
+  annotate(geom = &quot;text&quot;, x = .5, y = .5, # put x, y coordinates here otherwise return an error
+           label = &quot;Spinning\nhorsepower&quot;, 
+           color = &quot;white&quot;, fontface = &quot;bold&quot;, size = 5) +
+  scale_fill_brewer(palette = &quot;Dark2&quot;) </code></pre>
+<pre><code>## Coordinate system already present. Adding new coordinate system, which will replace the existing one.</code></pre>
+<pre class="r"><code>p.polar</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<pre class="r"><code># Rotated car names
+text.angle = 90 - 360 * (1:nrow(mtcars) - .5)/nrow(mtcars) # rotate cars name together with bars
+text.angle = ifelse(text.angle &lt; -90, 180 + text.angle, text.angle) # control flipping direction
+p.polar +
+  geom_text(aes(y  =hp + 80, label = cars), angle = text.angle) +
+  theme(axis.text = element_blank(),
+        legend.position = c(.5, 0.15))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" width="816" /></p>
+</div>
+</div>
+<div id="histogram" class="section level1">
+<h1><span class="header-section-number">4</span> Histogram</h1>
+<div id="iris-dataset" class="section level2">
+<h2><span class="header-section-number">4.1</span> Iris dataset</h2>
+<pre class="r"><code>iris.tidy = gather(iris, 1:4, # gather the first four variables into one variable (named as &quot;measure)
+                   key = measure, # the new variable &quot;measure&quot; contains the prior four variable names
+                   value = dimension) # &quot;dimension&quot; contains all numeric values associated with the prior four variables
+
+p1 = ggplot(iris.tidy, 
+            aes(x = dimension, fill = Species)) + 
+  geom_histogram(binwidth = .2, position = &quot;dodge&quot;) +
+  facet_wrap(~measure, nrow = 1,
+             scales = &quot;free_x&quot;) + # independent x-axis for each facet
+  
+  scale_fill_brewer(palette = &quot;Accent&quot;) + 
+  theme_bw() + 
+  theme(legend.position = &quot;bottom&quot;) +
+  labs(title = &quot;Histogram&quot;)</code></pre>
+<pre class="r"><code>p2 = ggplot(iris.tidy, 
+            aes(x = dimension, 
+                color = Species, # &quot;color&quot;: for the color of the boarder line 
+                fill = Species)) + # &quot;fill&quot;: for the color of the filling area
+  geom_density(alpha = .3) + # adjust the filling transparency
+  facet_wrap(~measure, nrow = 1, 
+             scales = &quot;free_x&quot;) + # independent x-axis for each facet
+  
+  scale_color_brewer(palette = &quot;Accent&quot;) +
+  scale_fill_brewer(palette = &quot;Accent&quot;) +
+  theme_bw() + 
+  theme(legend.position = &quot;bottom&quot;) +
+  labs(title = &quot;Density plot&quot;)</code></pre>
+<pre class="r"><code>grid.arrange(p1, p2, nrow = 2) # combine</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" width="960" /></p>
+</div>
+<div id="rock-dataset" class="section level2">
+<h2><span class="header-section-number">4.2</span> Rock dataset</h2>
+<pre class="r"><code>head(rock)</code></pre>
+<pre><code>##   area    peri     shape perm
+## 1 4990 2791.90 0.0903296  6.3
+## 2 7002 3892.60 0.1486220  6.3
+## 3 7558 3930.66 0.1833120  6.3
+## 4 7352 3869.32 0.1170630  6.3
+## 5 7943 3948.54 0.1224170 17.1
+## 6 7979 4010.15 0.1670450 17.1</code></pre>
+<pre class="r"><code># Check histogram for all four variables
+gather(rock, 1:4, # gather all four variables into one variable named &quot;measure&quot;
+       key = measure, # the new variable &quot;measure&quot; contains all prior four variable names
+       value = values # &quot;values&quot; contains all numeric values associated with prior four variables
+       ) %&gt;% # the pipeline feeds the gathered dataset into the 1st argument position of ggplot and streamlines programming
+  ggplot(aes(x = values)) + 
+  geom_histogram(fill = &quot;Steelblue&quot;) +
+  facet_wrap(~measure, # facet based on &quot;measure&quot;, i.e., the prior four variables
+             scales = &quot;free&quot;) + # independent x-y scale for all four faceted plots
+  theme_minimal() +
+  theme(strip.text = element_text(color = &quot;firebrick&quot;, face = &quot;bold&quot;),
+        panel.grid = element_line(color = &quot;firebrick&quot;, size = .2))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+<div id="diamonds-dataset-1" class="section level2">
+<h2><span class="header-section-number">4.3</span> Diamonds dataset</h2>
+<pre class="r"><code>ggplot(diamonds, aes(x = cut, fill = clarity)) + 
+  geom_histogram(stat = &quot;count&quot;, position = &quot;fill&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+</div>
+<div id="lollipop-plot" class="section level1">
+<h1><span class="header-section-number">5</span> Lollipop plot</h1>
+<div id="cars-dataset-1" class="section level2">
+<h2><span class="header-section-number">5.1</span> Cars dataset</h2>
+<pre class="r"><code># convert from matrix to data frame or tibble
+mtcars.t = as_tibble(mtcars)
+mtcars.t$cars = rownames(mtcars)
+mtcars.t</code></pre>
+<pre><code>## # A tibble: 32 x 12
+##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb cars  
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; 
+##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4 Mazda…
+##  2  21       6  160    110  3.9   2.88  17.0     0     1     4     4 Mazda…
+##  3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1 Datsu…
+##  4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1 Horne…
+##  5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2 Horne…
+##  6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1 Valia…
+##  7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4 Duste…
+##  8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2 Merc …
+##  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2 Merc …
+## 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4 Merc …
+## # … with 22 more rows</code></pre>
+<pre class="r"><code># Arrange cars in order of horsepower (hp)
+mtcars.t = mtcars.t %&gt;% arrange(hp)
+cars.ordered = mtcars.t$cars # vector of cars in order of horsepower
+
+mtcars.t.ordered = mtcars.t %&gt;% 
+  mutate(cars = factor(cars, levels = cars.ordered, ordered = T))</code></pre>
+<pre class="r"><code>p1 = mtcars.t.ordered %&gt;%
+ggplot(aes(x = cars, y = hp, color = factor(am))) + 
+  geom_point(aes(size = factor(cyl))) + 
+  # Do not specify point size in upper ggplot() line; 
+  # otherwise geom_segment lines width will also be dependent on cylinder number, which is less desirable 
+  
+  geom_segment(aes(x = cars, xend = cars, y = 0, yend = hp)) +
+  coord_flip() +
+  
+  # polish up
+  scale_color_brewer(palette = &quot;Set2&quot;) +
+  theme_minimal() +
+  theme(legend.position = c(.8, .3),
+        axis.text = element_text(color = &quot;black&quot;),
+        axis.title = element_text(color = &quot;black&quot;, face = &quot;bold&quot;))
+p1</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<hr />
+<p><em>Ignore warning “Using size for a discrete variable is not advised”. In this case, treating cylinder number as factor a discrete variable is more desirable than otherwise as numeric continuous variable.</em></p>
+<p><strong>Key in ordered plotting is to convert the associated variables (cars in this case) into: ORDERED FACTOR.</strong></p>
+<pre class="r"><code># polar plot
+text.angle = 90 - (1:nrow(mtcars) - .5) / nrow(mtcars) * 360
+text.angle = ifelse(text.angle &lt; -90, 180 + text.angle, text.angle)
+
+p1 + coord_polar() +
+  geom_text(aes(y = hp + 100, label = cars),
+            angle = text.angle,
+            show.legend = F) +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        legend.position = c(.5, .15),
+        legend.direction = &quot;horizontal&quot;,
+        panel.grid = element_blank())</code></pre>
+<pre><code>## Coordinate system already present. Adding new coordinate system, which will replace the existing one.</code></pre>
+<pre><code>## Warning: Using size for a discrete variable is not advised.</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-23-1.png" width="864" /></p>
+</div>
+</div>
+<div id="maps" class="section level1">
+<h1><span class="header-section-number">6</span> Maps</h1>
+<pre class="r"><code># world map
+
+my.world = map_data(&quot;world&quot;)
+dim(my.world); head(my.world); tail(my.world)</code></pre>
+<pre><code>## [1] 99338     6</code></pre>
+<pre><code>##        long      lat group order region subregion
+## 1 -69.89912 12.45200     1     1  Aruba      &lt;NA&gt;
+## 2 -69.89571 12.42300     1     2  Aruba      &lt;NA&gt;
+## 3 -69.94219 12.43853     1     3  Aruba      &lt;NA&gt;
+## 4 -70.00415 12.50049     1     4  Aruba      &lt;NA&gt;
+## 5 -70.06612 12.54697     1     5  Aruba      &lt;NA&gt;
+## 6 -70.05088 12.59707     1     6  Aruba      &lt;NA&gt;</code></pre>
+<pre><code>##            long      lat group  order  region subregion
+## 100959 12.43916 41.89839  1627 100959 Vatican   enclave
+## 100960 12.43838 41.90620  1627 100960 Vatican   enclave
+## 100961 12.43057 41.90547  1627 100961 Vatican   enclave
+## 100962 12.42754 41.90073  1627 100962 Vatican   enclave
+## 100963 12.43057 41.89756  1627 100963 Vatican   enclave
+## 100964 12.43916 41.89839  1627 100964 Vatican   enclave</code></pre>
+<pre class="r"><code>n.country = my.world$region %&gt;% n_distinct() 
+color.func = brewer.pal(12, &quot;Paired&quot;) %&gt;% colorRampPalette() # Divide &quot;Paired&quot; colors into more colors
+country.colors = color.func(n.country) # randomly shuffle color order; otherwise adjacent regions will be of similar colors
+
+worldmap = ggplot() + 
+  geom_polygon(data = my.world,
+               aes(x = long, y = lat, # longitude vs. latitude
+                   group = group, # dots for same group connected together
+                   fill = region), # fill color by region (country)
+               color = &quot;white&quot; # country boarder
+               ) +
+  
+  # polish up
+  guides(fill=FALSE) + # not show legend
+  coord_fixed(1.2) + # keep aspect ratio the same
+  scale_fill_manual(values = country.colors) +
+  scale_x_continuous(breaks = seq(-180, 180, by = 60),name = &quot;Longitude&quot;) +
+  scale_y_continuous(breaks = seq(-90, 90, by = 30), name = &quot;Latitude&quot;) +
+  theme_minimal() 
+  
+worldmap</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-24-1.png" width="960" /></p>
+<div id="brics-vs-nato" class="section level2">
+<h2><span class="header-section-number">6.1</span> BRICS VS NATO</h2>
+<p>Disclaim: this plot does not display any political views. It is only used for communicating plotting techniques.</p>
+<pre class="r"><code># Brics countries
+Brics = c(&quot;Brazil&quot;, &quot;Russia&quot;, &quot;India&quot;, &quot;China&quot;, &quot;South Africa&quot;)
+  # source: https://www.investopedia.com/terms/b/brics.asp
+Brics.col = brewer.pal(length(Brics), &quot;Reds&quot;)  # color for Bricks countries
+names(Brics.col) = Brics; Brics.col # create named vectors</code></pre>
+<pre><code>##       Brazil       Russia        India        China South Africa 
+##    &quot;#FEE5D9&quot;    &quot;#FCAE91&quot;    &quot;#FB6A4A&quot;    &quot;#DE2D26&quot;    &quot;#A50F15&quot;</code></pre>
+<pre class="r"><code># NATO countries
+NATO = c(&quot;Albania&quot;, &quot;Belgium&quot;, &quot;Bulgaria&quot;, &quot;Canada&quot;, &quot;Croatia&quot;, &quot;Czech Republic&quot;, &quot;Denmark&quot;, &quot;Estonia&quot;, &quot;France&quot;, &quot;Germany&quot;, &quot;Greece&quot;, &quot;Hungary&quot;, &quot;Iceland&quot;, &quot;Italy&quot;, &quot;Latvia&quot;, &quot;Lithuania&quot;, &quot;Luxembourg&quot;, &quot;Montenegro&quot;, &quot;Netherlands&quot;, &quot;Norway&quot;, &quot;Poland&quot;, &quot;Portugal&quot;, &quot;Romania&quot;, &quot;Slovakia&quot;, &quot;Slovenia&quot;, &quot;Spain&quot;, &quot;Turkey&quot;, &quot;UK&quot;, &quot;USA&quot;)
+# source : https://www.nti.org/learn/treaties-and-regimes/north-atlantic-treaty-organization-nato/
+
+NATO %in% (map_data(&quot;world&quot;)$region %&gt;% unique()) # check all NATO countries are listed in map_data </code></pre>
+<pre><code>##  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+## [15] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+## [29] TRUE</code></pre>
+<pre class="r"><code># [3:9] to remove the less visible light blue colors
+NATO.col.func = c(brewer.pal(9, &quot;Blues&quot;)[3:9]) %&gt;% colorRampPalette() 
+
+NATO.col = NATO.col.func(n = length(NATO)) 
+names(NATO.col) = NATO; NATO.col # create named vectors</code></pre>
+<pre><code>##        Albania        Belgium       Bulgaria         Canada        Croatia 
+##      &quot;#C6DBEF&quot;      &quot;#BDD7EC&quot;      &quot;#B4D3E9&quot;      &quot;#ACD0E6&quot;      &quot;#A3CCE3&quot; 
+## Czech Republic        Denmark        Estonia         France        Germany 
+##      &quot;#9AC8E0&quot;      &quot;#8FC2DD&quot;      &quot;#84BBDB&quot;      &quot;#79B6D9&quot;      &quot;#6EB0D6&quot; 
+##         Greece        Hungary        Iceland          Italy         Latvia 
+##      &quot;#65AAD3&quot;      &quot;#5CA4D0&quot;      &quot;#539ECC&quot;      &quot;#4A98C9&quot;      &quot;#4292C6&quot; 
+##      Lithuania     Luxembourg     Montenegro    Netherlands         Norway 
+##      &quot;#3A8AC2&quot;      &quot;#3383BE&quot;      &quot;#2C7CBB&quot;      &quot;#2575B7&quot;      &quot;#1F6EB3&quot; 
+##         Poland       Portugal        Romania       Slovakia       Slovenia 
+##      &quot;#1967AD&quot;      &quot;#1460A8&quot;      &quot;#0F5AA3&quot;      &quot;#09539D&quot;      &quot;#084C95&quot; 
+##          Spain         Turkey             UK            USA 
+##      &quot;#08458A&quot;      &quot;#083E80&quot;      &quot;#083775&quot;      &quot;#08306B&quot;</code></pre>
+<pre class="r"><code># Combine Bricks with NATO
+country = c(Brics, NATO)
+country.colors = c(Brics.col, NATO.col)</code></pre>
+<pre class="r"><code># Plot
+p.world = ggplot(data = map_data(&quot;world&quot;), # add global background
+       aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = &quot;grey&quot;, color = &quot;white&quot;) +
+  coord_fixed(1.2) +
+  theme_minimal() +
+  
+  geom_polygon(data = map_data(&quot;world&quot;, region = country), # add NATO &amp; BRICS countries
+               aes(fill = region), color = &quot;white&quot;) +
+  scale_fill_manual(values = country.colors) +
+  
+  # extra polish up
+  labs(title = &quot;NATO (blues) vs BRICS (reds)&quot;) +
+  theme(legend.position = &quot;bottom&quot;, 
+        legend.direction = &quot;horizontal&quot;,
+        title = element_text(face = &quot;bold&quot;)) +
+  guides(fill = guide_legend(nrow = 4)) + # legend row number
+  scale_x_continuous(breaks = seq(-180, 180, by = 60),name = &quot;Longitude&quot;) +
+  scale_y_continuous(breaks = seq(-90, 90, by = 30), name = &quot;Latitude&quot;) 
+  
+p.world</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-26-1.png" width="1152" /></p>
+<pre class="r"><code># europe zoom in (as insert)
+p.euro = p.world + 
+  coord_fixed(1.2, xlim = c(-25, 50), ylim = c(30, 70)) + 
+  # theme, labs and scale overwite those of p.world 
+  theme(panel.border = element_rect(fill = NA, color = &quot;black&quot;), 
+        panel.grid = element_blank(),
+        title = element_text(face = &quot;bold&quot;),
+        axis.title = element_blank(),
+        legend.position = &quot;&quot;) +
+  labs(title = &quot;European NATO zoomed-in&quot;) + 
+  scale_x_continuous(breaks = seq(-25, 50, by = 25)) +
+  scale_y_continuous(breaks = seq(30, 70, by = 10)) 
+
+p.euro</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<pre class="r"><code>ggdraw() +
+  draw_plot(p.world) +
+  draw_plot(p.euro, x = 0.05, y = -.06, width = .27)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" width="1152" /></p>
+</div>
+<div id="us-crime-dataset" class="section level2">
+<h2><span class="header-section-number">6.2</span> US crime dataset</h2>
+<pre class="r"><code>USArrests.2 = USArrests %&gt;% 
+  mutate(region = rownames(USArrests) %&gt;% # add &quot;region&quot; column of state names 
+           tolower()) # all states in small letters (to merge with &quot;state&quot; dataset)
+
+ # these two states are not in the &quot;state&quot; mainland dataset
+USArrests.2[!USArrests.2$region %in% map_data(&quot;state&quot;)$region, ]</code></pre>
+<pre><code>##    Murder Assault UrbanPop Rape region
+## 2    10.0     263       48 44.5 alaska
+## 11    5.3      46       83 20.2 hawaii</code></pre>
+<pre class="r"><code>USArrests.2 = USArrests.2 %&gt;% 
+  inner_join(map_data(&quot;state&quot;), by = &quot;region&quot;) # augment with US geographical data
+
+USArrests.2 %&gt;% 
+  ggplot() +
+  theme_map() +
+  geom_polygon(aes(x = long, y = lat, group = group, fill = Murder), 
+               color = &quot;white&quot;, size = 1) + # set up state border line color and width
+  
+  # polish up
+  coord_fixed(1.4) +
+  labs(title = &quot;Murder per 100K residents, USA, 1973&quot;) +
+  scale_fill_viridis(option = &quot;magma&quot;, direction = -1) +  # direction: reverse the color scale
+  theme(legend.position = &quot;bottom&quot;) +
+  guides(fill = guide_colourbar(barwidth = 20, direction = &quot;horizontal&quot;)) +
+  theme(plot.title = element_text(hjust = .5, size = 14, face = &quot;bold&quot;))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+</div>
+<div id="database-map" class="section level2">
+<h2><span class="header-section-number">6.3</span> Database map</h2>
+<pre class="r"><code>library(leaflet)
+# Background 1: NASA
+leaflet() %&gt;% 
+  addTiles() %&gt;% 
+  setView( lng = 2.34, lat = 48.85, zoom = 5 ) %&gt;% 
+  addProviderTiles(&quot;NASAGIBS.ViirsEarthAtNight2012&quot;)</code></pre>
+<div id="htmlwidget-b9b1e2e62979a1680ac0" style="width:768px;height:672px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b9b1e2e62979a1680ac0">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["NASAGIBS.ViirsEarthAtNight2012",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],5,[]]},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code># Background 2: World Imagery
+leaflet() %&gt;% 
+  addTiles() %&gt;% 
+  setView( lng = 2.34, lat = 48.85, zoom = 3 ) %&gt;% 
+  addProviderTiles(&quot;Esri.WorldImagery&quot;)</code></pre>
+<div id="htmlwidget-f189cd91042d787f0b18" style="width:768px;height:672px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f189cd91042d787f0b18">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],3,[]]},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="us-mainland-airports" class="section level2">
+<h2><span class="header-section-number">6.4</span> US mainland airports</h2>
+<pre class="r"><code>library(stringr)
+airport.US.mainland = airports %&gt;%
+  filter(tzone %&gt;% str_detect(&quot;America&quot;),
+         lon &lt; -50, lat &lt; 50)
+
+# select EWR airport
+airport.EWR = airports %&gt;% filter(faa == &quot;EWR&quot;)</code></pre>
+<p><strong>Remove EWR from mainland airport dataset (otherwise geom_curve connection would report and error, as the same EWR point can’t connect to itself)</strong></p>
+<pre class="r"><code>airport.US.mainland = airport.US.mainland %&gt;% anti_join(airport.EWR)</code></pre>
+<pre><code>## Joining, by = c(&quot;faa&quot;, &quot;name&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;alt&quot;, &quot;tz&quot;, &quot;dst&quot;, &quot;tzone&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = map_data(&quot;usa&quot;) ) + # US map background
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = &quot;black&quot;) +
+  coord_fixed(1.5) +
+  theme_map() + # from ggthemes package
+  
+  # add airports
+  geom_point(data = airport.US.mainland,
+             aes(x = lon, y = lat),
+             color = &quot;tomato&quot;, shape = &quot;.&quot;) +
+  
+  
+  # connect EWR airport with all other airports
+  geom_curve(data = airport.US.mainland,
+             aes(x = airport.EWR$lon, xend = lon,
+                 y = airport.EWR$lat, yend = lat),
+             alpha = .1, color = &quot;turquoise2&quot;,  
+             curvature = .1) +
+  annotate(geom = &quot;Text&quot;, label = &quot;EWR&quot;, color = &quot;Black&quot;, fontface = &quot;bold&quot;,
+           x = airport.EWR$lon + 1.8, y = airport.EWR$lat-.8)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" width="960" /></p>
+</div>
+</div>
+<div id="word-cloud" class="section level1">
+<h1><span class="header-section-number">7</span> Word cloud</h1>
+<pre class="r"><code>library(nycflights13)
+library(wordcloud)
+plane.makers = planes %&gt;% dplyr::select(manufacturer) %&gt;% 
+  table() # count occurrence frequency
+
+set.seed(1234)
+par(bg=&quot;black&quot;)  # set background
+wordcloud(words = names(plane.makers), 
+          freq = plane.makers %&gt;% sqrt(), # reduce frequency difference
+          min.freq = 1, random.order = F, rot.per = .1,
+          colors = terrain.colors(8)) </code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
 </div>
 
 
@@ -581,7 +1157,7 @@ $(document).ready(function ()  {
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
     };
-    options.showAndHide = false;
+    options.showAndHide = true;
     options.smoothScroll = false;
 
     // tocify
