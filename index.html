@@ -10,9 +10,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Bo Yuan" />
 
 
-<title>Scatterplots</title>
+<title>RVision Mini-Gallery</title>
 
 <script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -364,11 +365,16 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Scatterplots</h1>
+<h1 class="title toc-ignore">RVision Mini-Gallery</h1>
+<h4 class="author">Bo Yuan</h4>
+<h4 class="date">11/5/2019</h4>
 
 </div>
 
 
+<p>This document is a quick demonstration of some of the useful codes I’ve been using frequently for R plotting. All dataset used is built in R, and there is no need to import external data (web-linkage, literature, etc.) to run the script.</p>
+<p>Since this is a self-motivated side project of mine, this document may not be error-free. But I tried to polish it up as much as I could within reasonable time frame.</p>
+<p>More plots on the way.</p>
 <pre class="r"><code>library(ggplot2)
 library(tidyr)
 library(dplyr)
@@ -1041,15 +1047,15 @@ leaflet() %&gt;%
   addTiles() %&gt;% 
   setView( lng = 2.34, lat = 48.85, zoom = 5 ) %&gt;% 
   addProviderTiles(&quot;NASAGIBS.ViirsEarthAtNight2012&quot;)</code></pre>
-<div id="htmlwidget-b9b1e2e62979a1680ac0" style="width:768px;height:672px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-b9b1e2e62979a1680ac0">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["NASAGIBS.ViirsEarthAtNight2012",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],5,[]]},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-ec78589326078974c873" style="width:768px;height:672px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ec78589326078974c873">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["NASAGIBS.ViirsEarthAtNight2012",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],5,[]]},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code># Background 2: World Imagery
 leaflet() %&gt;% 
   addTiles() %&gt;% 
   setView( lng = 2.34, lat = 48.85, zoom = 3 ) %&gt;% 
   addProviderTiles(&quot;Esri.WorldImagery&quot;)</code></pre>
-<div id="htmlwidget-f189cd91042d787f0b18" style="width:768px;height:672px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-f189cd91042d787f0b18">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],3,[]]},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-6e869faa6ccd4d80bd2b" style="width:768px;height:672px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6e869faa6ccd4d80bd2b">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}],"setView":[[48.85,2.34],3,[]]},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="us-mainland-airports" class="section level2">
 <h2><span class="header-section-number">6.4</span> US mainland airports</h2>

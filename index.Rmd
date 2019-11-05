@@ -1,5 +1,7 @@
 ---
-title: "Scatterplots"
+title: "RVision Mini-Gallery"
+author: "Bo Yuan"
+date: "11/5/2019"
 output: 
   html_document:
     toc: true
@@ -9,6 +11,14 @@ output:
       collapsed: true
       smooth_scroll: false
 ---
+
+This document is a quick demonstration of some of the useful codes I've been using frequently for R plotting. All dataset used is built in R, and there is no need to import external data (web-linkage, literature, etc.) to run the script. 
+
+Since this is a self-motivated side project of mine, this document may not be error-free. But I tried to polish it up as much as I could within reasonable time frame. 
+
+More plots on the way. 
+ 
+
 
 ```{r, message=F, warning=F}
 library(ggplot2)
