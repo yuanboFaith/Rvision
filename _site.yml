@@ -1,6 +1,6 @@
 name: "my-website"
 navbar:
-  title: "LC/MS method development & validation"
+  title: "Rvision Mini-Gallery"
 left:
   - text: "R script"
 href: index.html

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Scatterplots</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">LC/MS method development & validation</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Scatterplots</h1>
+
+</div>
+
+
+<div id="old-faithful-geyser" class="section level1">
+<h1><span class="header-section-number">1</span> Old Faithful Geyser</h1>
+<pre class="r"><code>library(ggplot2)
+library(ggExtra)
+head(faithful)</code></pre>
+<pre><code>##   eruptions waiting
+## 1     3.600      79
+## 2     1.800      54
+## 3     3.333      74
+## 4     2.283      62
+## 5     4.533      85
+## 6     2.883      55</code></pre>
+<pre class="r"><code>p = ggplot(faithful, 
+           aes(x = waiting, y = eruptions)) + 
+  geom_point(alpha = .5,
+             size = 3,
+             position = &quot;jitter&quot;) +
+  theme_classic() +
+  theme(title = element_text(face = &quot;bold&quot;))
+
+p   
+
+ggMarginal(p) # add marginal density plot</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+</div>
+<div id="iris-flowers" class="section level1">
+<h1><span class="header-section-number">2</span> Iris flowers</h1>
+<div id="plot-1" class="section level2">
+<h2><span class="header-section-number">2.1</span> Plot 1</h2>
+<pre class="r"><code>ggplot(iris, 
+       aes(Sepal.Length, y = Sepal.Width, color = Species)) + 
+  geom_count(alpha = .6) + # use point size to show data density (overcome overlaping)
+  theme_classic() +
+  labs(title = &quot;Edgar Anderson&#39;s Iris Data&quot;) +
+  theme(title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="plot-2" class="section level2">
+<h2><span class="header-section-number">2.2</span> Plot 2</h2>
+<pre class="r"><code>library(ggplot2)
+head(iris)</code></pre>
+<pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+## 1          5.1         3.5          1.4         0.2  setosa
+## 2          4.9         3.0          1.4         0.2  setosa
+## 3          4.7         3.2          1.3         0.2  setosa
+## 4          4.6         3.1          1.5         0.2  setosa
+## 5          5.0         3.6          1.4         0.2  setosa
+## 6          5.4         3.9          1.7         0.4  setosa</code></pre>
+<pre class="r"><code>ggplot(iris, 
+       aes(x = Sepal.Length, y = Sepal.Width, 
+           color = Petal.Length, size = Petal.Width)) + 
+  geom_point(position = position_jitter(.2, .2), alpha = .6) + # add small random noise to dots&#39; position to avoid overlap
+  geom_smooth(method = &quot;lm&quot;, color = &quot;black&quot;, se = F, size = .5) +
+  facet_wrap(~Species) + # facet based on species 
+  
+  # polish up
+  theme_bw() +
+  scale_color_continuous(low = &quot;steelblue&quot;, high = &quot;black&quot;) + # control colorbar for Petal.Length
+  theme(title = element_text(face = &quot;bold&quot;),
+        axis.title =  element_text(color = &quot;firebrick&quot;, face = &quot;bold&quot;),
+        axis.text = element_text(color = &quot;firebrick&quot;),
+        strip.background = element_blank(), 
+        strip.text = element_text(face = &quot;bold&quot;, color = &quot;firebrick&quot;, size = 12)) +
+  labs(title = &quot;Edgar Anderson&#39;s Iris Data&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+</div>
+<div id="diamonds" class="section level1">
+<h1><span class="header-section-number">3</span> Diamonds</h1>
+<pre class="r"><code>library(ggplot2)
+head(diamonds)</code></pre>
+<pre><code>## # A tibble: 6 x 10
+##   carat cut       color clarity depth table price     x     y     z
+##   &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 0.23  Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+## 2 0.21  Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+## 3 0.23  Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+## 4 0.290 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+## 5 0.31  Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+## 6 0.24  Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48</code></pre>
+<pre class="r"><code>dim(diamonds)</code></pre>
+<pre><code>## [1] 53940    10</code></pre>
+<pre class="r"><code>ggplot(diamonds, 
+       aes(x = carat, y = price, color = cut)) + 
+  geom_point(alpha = .4, shape = &quot;.&quot;) + # &quot;shape = &quot;.&quot; and transparency set to .4 decrease overlap 
+  geom_smooth(method = &quot;lm&quot;, se = F, size = .6, linetype = &quot;dashed&quot;) + # regression
+  
+  # polish up
+  scale_color_brewer(palette = &quot;Set1&quot;) + 
+  theme_bw() + 
+  theme(legend.position = c(.8, .2), 
+        title = element_text(face = &quot;bold&quot;)) +
+  coord_cartesian(xlim = c(0, 4), ylim = c(0, 20000)) + # zoom in 
+  labs(title = &quot;Prices of 50,000 round cut diamonds&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="cars" class="section level1">
+<h1><span class="header-section-number">4</span> Cars</h1>
+<pre class="r"><code>library(ggplot2)
+library(ggrepel)
+library(ggExtra)
+p = ggplot(mtcars, 
+           aes(x = wt, y = mpg, 
+               color = factor(cyl), shape = factor(am))) + # use of &quot;factor()&quot; change cyl and am from continuous to discrete variables; particularly important since &quot;shape&quot; is discrete
+  geom_point() +
+  geom_smooth(aes(group = cyl), method = &quot;lm&quot;, se = F, linetype = &quot;dashed&quot;) + # regression line. specification of &quot;aes(group = cyl)&quot; ensures grouping based on cylinder (cyl) number alone; if not specified, inheriting aesthetic from above, regression is performed  based on combinations of cyl and auto/manual transmission (am)
+  geom_text_repel(aes(label = rownames(mtcars)), size = 3) + # add car names, avoiding overlap
+  
+  # polish up
+  theme_classic() + 
+  theme(legend.position = c(.8, .7), 
+        title = element_text(face = &quot;bold&quot;)) +
+  stat_ellipse(aes(group = cyl), linetype = &quot;dotted&quot;) + # add distribution ellipse
+  labs(x = &quot;Weight (1000 lbs)&quot;, y = &quot;Miles/(US) gallon&quot;)
+p  
+
+ggMarginal(p, type = &quot;density&quot;, size = 10, groupColour = T, groupFill = T, alpha = .2) # add marginal density plot</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="960" /></p>
+</div>
+<div id="mammals" class="section level1">
+<h1><span class="header-section-number">5</span> Mammals</h1>
+<pre class="r"><code>library(ggplot2)
+library(MASS)
+ggplot(mammals, 
+       aes(x = body, y = brain)) + geom_point() +
+  geom_smooth(method = &quot;lm&quot;, fill = &quot;firebrick&quot;, color = &quot;firebrick&quot;, alpha = .2, size = .5) +
+  scale_x_log10() + 
+  scale_y_log10() + # log transform axis
+  
+  # polish up
+  annotation_logticks() +  # add log10 marks
+  theme_bw() +
+  labs(title = &quot;Attributes of Animals data&quot;) +
+  theme(title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="new-york-flight" class="section level1">
+<h1><span class="header-section-number">6</span> New york flight</h1>
+<pre class="r"><code>library(ggplot2)
+library(dplyr)
+library(RColorBrewer)
+library(nycflights13)
+
+theme_set(theme_bw() + 
+            theme(title = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
+                  axis.text = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
+                  legend.text = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;),
+                  legend.title = element_text(colour = &quot;black&quot;, face = &quot;bold&quot;)))
+
+planes %&gt;% 
+  ggplot(aes(x = year, y = seats, color = engine)) +
+  geom_count(alpha = .4, 
+             position = position_jitter(0, 10)) +
+  scale_x_continuous(breaks = seq(1960, 2010, by = 10)) +
+  scale_color_brewer(palette = &quot;Dark2&quot;, &quot;Engine type&quot;) +
+  scale_size(range = c(4, 14), &quot;Dot density&quot;) +
+  theme(legend.position = c(.2, .7)) +
+  labs(title = &quot;Plane metadata&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="960" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
