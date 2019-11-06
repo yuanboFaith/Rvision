@@ -517,10 +517,9 @@ p1 + coord_polar() +
 
 
 # Maps
+## world map
 
 ```{r, fig.width=10, fig.height=8}
-# world map
-
 my.world = map_data("world")
 dim(my.world); head(my.world); tail(my.world)
 
