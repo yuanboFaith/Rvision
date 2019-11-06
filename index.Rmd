@@ -12,12 +12,12 @@ output:
       smooth_scroll: false
 ---
 
-This document is a quick demonstration of some of the useful codes I've been using frequently for R plotting. All dataset used is built in R, and there is no need to import external data (web-linkage, literature, etc.) to run the script. 
+This document serves as a quick demonstration of some of the useful codes I've been using frequently for R plotting. All dataset used is built in R, and there is no need to import external data (web-linkage, literature, etc.) to run the script. 
 
-Since this is a self-motivated side project of mine, this document may not be error-free. But I tried to polish it up as much as I could within reasonable time frame. 
+While this document is not intended to be error-free, the script should run without error. If there are any problems, please report to yuanbo.faith@gmail.com.
 
-More plots on the way. 
- 
+More plots on the way.  
+
 
 
 ```{r, message=F, warning=F}
