@@ -517,6 +517,9 @@ p1 + coord_polar() +
 
 
 # Maps
+
+*Disclaim: these plots do not display any political views. They are only used for communicating plotting techniques. *
+
 ## world map
 
 ```{r, fig.width=10, fig.height=8}
@@ -549,7 +552,6 @@ worldmap
 
 ## BRICS VS NATO
 
-Disclaim: this plot does not display any political views. It is only used for communicating plotting techniques. 
 
 ```{r, message=F, warning=F}
 # Brics countries
