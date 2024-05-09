@@ -1,1 +1,1 @@
-This website summarizes some of the common techniques I used in data visualization in R with ggplot2. Additional tips and advanced techniques with inspiring illustrations can be found in [DataBrewer ggplot2 Grphic Gallery](https://www.databrewer.co/R/gallery). 
+This webpage summarizes some of the common techniques I used in data visualization in R with ggplot2. More tips and advanced techniques illustrated with inspiring graphics can be found in the [DataBrewer ggplot2 Graphic Gallery](https://www.databrewer.co/R/gallery). 
