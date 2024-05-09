@@ -1,1 +1,1 @@
-# Rvision
+This website summarizes some of the common techniques I used in data visualization in R with ggplot2. Additional tips and advanced techniques with inspiring illustrations can be found in [DataBrewer ggplot2 Grphic Gallery](https://www.databrewer.co/R/gallery). 
